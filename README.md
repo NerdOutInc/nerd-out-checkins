@@ -30,6 +30,11 @@ Row-level security: signed-in users can read all check-ins and profiles, post on
 
 Import this repo in Vercel and add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as environment variables.
 
+## Project docs
+
+- [docs/decisions.md](docs/decisions.md): decisions and the reasoning behind them
+- [docs/session-log.md](docs/session-log.md): running log of working sessions
+
 ## Layout
 
 - `src/app` – layout, page, global styles (carried over from the prototype)
