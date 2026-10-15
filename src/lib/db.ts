@@ -79,7 +79,14 @@ function localRepo(): Repo {
   };
 }
 
+let repo: Repo | undefined;
+
+/** One shared repo (and Supabase client) per browser session. */
 export function createRepo(): Repo {
+  return (repo ??= buildRepo());
+}
+
+function buildRepo(): Repo {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return url && key ? supabaseRepo(url, key) : localRepo();
