@@ -1,0 +1,842 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Nerd Out Check-ins</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column, sticky header with tabs, cards only for check-ins. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --fg: #16202c;
+  --muted: #5b6676;
+  --line: #dbe1e8;
+  --accent: #2443b0;
+  --accent-soft: #e7ecfb;
+  --block: #b8322a;
+  --block-soft: #fbebe9;
+  --ok: #217446;
+  --ok-soft: #e4f2ea;
+  --warn: #8a5a00;
+  --warn-soft: #fbf1dc;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151b; --surface: #19202a; --fg: #e5e9ef; --muted: #97a2b0; --line: #2b3440;
+    --accent: #85a0ff; --accent-soft: #1f2a4a; --block: #ff8075; --block-soft: #3a201e;
+    --ok: #62d097; --ok-soft: #16302a; --warn: #f0c060; --warn-soft: #33290f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151b; --surface: #19202a; --fg: #e5e9ef; --muted: #97a2b0; --line: #2b3440;
+  --accent: #85a0ff; --accent-soft: #1f2a4a; --block: #ff8075; --block-soft: #3a201e;
+  --ok: #62d097; --ok-soft: #16302a; --warn: #f0c060; --warn-soft: #33290f; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 0 48px; }
+.wrap { max-width: 760px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 18px 12px; border-bottom: 1px solid var(--line);
+  margin-left: calc(-1 * var(--gutter-l)); margin-right: calc(-1 * var(--gutter-r)); padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.head-row { max-width: 760px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+h1 { font-size: 28px; line-height: 1.1; }
+.who { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.who select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; color: var(--fg); }
+.tabs { max-width: 760px; margin: 14px auto 0; display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.tabs button { flex: 1; border: 0; background: transparent; padding: 8px; border-radius: 7px; font-weight: 700; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--surface); }
+
+main { padding-top: 20px; display: grid; gap: 16px; }
+
+/* Check-in form */
+.form { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 16px; }
+.form h2 { font-size: 22px; }
+.posting-as { color: var(--muted); font-size: 14px; }
+.posting-as b { color: var(--fg); }
+label { display: grid; gap: 6px; font-weight: 700; font-size: 14px; }
+label span.hint { font-weight: 400; color: var(--muted); }
+textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-height: 84px; resize: vertical; }
+textarea#f-blocked { border-color: color-mix(in srgb, var(--block) 35%, var(--line)); }
+.btn { border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 700; background: var(--accent); color: var(--surface); justify-self: start; }
+.btn.small { padding: 6px 12px; font-size: 13.5px; }
+.btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); }
+.btn.ok { background: var(--ok-soft); color: var(--ok); border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
+.btn.danger { background: transparent; color: var(--block); border: 1px solid color-mix(in srgb, var(--block) 40%, transparent); }
+.error { color: var(--block); font-size: 14px; }
+.toast { background: var(--ok-soft); color: var(--ok); border-radius: 8px; padding: 10px 14px; font-weight: 700; }
+.toast.bad { background: var(--block-soft); color: var(--block); }
+
+/* Feed */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.day-head { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; }
+.day-head h3 { font-size: 17px; }
+.day-head span { color: var(--muted); font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card.pending { border-style: dashed; }
+.card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--accent-soft); color: var(--accent); flex: none; }
+.name { font-weight: 700; }
+.role { font-size: 12.5px; color: var(--muted); }
+.time { margin-left: auto; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.pill { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; border-radius: 999px; padding: 2px 9px; }
+.pill.blocked { background: var(--block-soft); color: var(--block); }
+.pill.resolved { background: var(--ok-soft); color: var(--ok); }
+.sec { display: grid; gap: 2px; min-width: 0; }
+.sec-label { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.sec p { margin: 0; overflow-wrap: anywhere; }
+.blocker { background: var(--block-soft); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; }
+.blocker .sec-label { color: var(--block); }
+.blocker.is-resolved { background: var(--ok-soft); }
+.blocker.is-resolved .sec-label { color: var(--ok); }
+.replies { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 8px; }
+.reply { font-size: 14px; display: grid; gap: 1px; }
+.reply .r-by { font-weight: 700; }
+.reply .r-by.owner { color: var(--accent); }
+.reply .r-by small { font-family: var(--font-mono); font-weight: 500; color: var(--muted); margin-left: 6px; }
+.reply p { margin: 0; overflow-wrap: anywhere; }
+.reply-form { display: flex; gap: 8px; }
+.reply-form input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.empty { color: var(--muted); text-align: center; padding: 24px; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; }
+.empty b { color: var(--fg); display: block; font-family: var(--font-display); font-size: 17px; margin-bottom: 4px; }
+
+/* Report */
+.report-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.report-head h2 { font-size: 22px; }
+.toggle { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.toggle button { border: 0; background: transparent; padding: 6px 14px; font-weight: 700; color: var(--muted); }
+.toggle button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.stat .num { font-family: var(--font-display); font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat .num.bad { color: var(--block); }
+.stat .lbl { font-size: 13px; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.panel h3 { font-size: 17px; }
+.people { display: flex; flex-wrap: wrap; gap: 6px; }
+.person { border-radius: 999px; padding: 3px 10px; font-size: 13.5px; background: var(--ok-soft); color: var(--ok); }
+.person.missing { background: var(--block-soft); color: var(--block); }
+.row { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding-block: 8px; border-top: 1px solid var(--line); }
+.row:first-of-type { border-top: 0; }
+.row .who-col { font-weight: 700; }
+.row .who-col small { display: block; font-weight: 400; color: var(--muted); }
+.row p { margin: 0; overflow-wrap: anywhere; }
+.age { font-family: var(--font-mono); font-size: 12.5px; color: var(--block); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); border-top: 0; }
+td.c, th.c { text-align: center; }
+td.rate { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.rate.low { color: var(--block); }
+.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+.dot.yes { background: var(--ok); }
+.dot.no { background: transparent; border: 2px solid var(--block); }
+.dot.future { background: var(--line); width: 6px; height: 6px; }
+details { border-top: 1px solid var(--line); padding-block: 8px; }
+details:first-of-type { border-top: 0; }
+summary { cursor: pointer; font-weight: 700; }
+summary small { font-weight: 400; color: var(--muted); }
+details ul { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; }
+details li span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-right: 6px; }
+.sample-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.sample-bar b { color: var(--warn); }
+.confirm-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Simulated text messages */
+.mode { justify-self: start; }
+.sms-layout { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+.phone { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; min-height: 460px; }
+.phone-top { text-align: center; padding: 12px; border-bottom: 1px solid var(--line); }
+.phone-top b { display: block; font-size: 14px; }
+.phone-top span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.thread { padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 420px; background: var(--bg); }
+.bubble { max-width: 82%; padding: 8px 12px; border-radius: 16px; font-size: 14px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.bubble.out { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.bubble.in { align-self: flex-end; background: var(--accent); color: var(--surface); border-bottom-right-radius: 4px; }
+.bubble-time { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.bubble-time.in { align-self: flex-end; }
+.sms-input { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); }
+.sms-input textarea { flex: 1; min-width: 0; min-height: 44px; max-height: 140px; border-radius: 18px; padding: 10px 14px; background: var(--bg); }
+.sms-input button { align-self: end; border-radius: 999px; }
+.sms-side { display: grid; gap: 12px; min-width: 0; }
+.sms-side p { margin: 0; }
+.muted { color: var(--muted); font-size: 14px; }
+.tag { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; border-radius: 999px; padding: 2px 9px; background: var(--accent-soft); color: var(--accent); }
+.tag.sample { background: var(--warn-soft); color: var(--warn); }
+.raw { font-size: 13.5px; color: var(--muted); border-top: 0; padding-block: 0; }
+.raw summary { font-weight: 400; color: var(--muted); font-size: 13px; }
+.raw p { margin: 6px 0 0; font-style: italic; overflow-wrap: anywhere; }
+
+@media (max-width: 680px) { .sms-layout { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  .stat .num { font-size: 24px; }
+  .row { grid-template-columns: 1fr; gap: 2px; }
+  h1 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header>
+  <div class="head-row">
+    <div>
+      <div class="eyebrow">Nerd Out, Inc.</div>
+      <h1>Daily Check-ins</h1>
+    </div>
+    <label class="who" for="me">You are
+      <select id="me"></select>
+    </label>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="checkin" aria-selected="false">Check in</button>
+    <button role="tab" data-tab="feed" aria-selected="true">Feed</button>
+    <button role="tab" data-tab="report" aria-selected="false">Report</button>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+  <!-- CHECK IN TAB -->
+  <section id="tab-checkin" hidden>
+   <div style="display:grid;gap:14px">
+    <div class="toggle mode">
+      <button data-mode="form" aria-pressed="true">Web form</button>
+      <button data-mode="text" aria-pressed="false">Text message (simulated)</button>
+    </div>
+
+    <div id="mode-text" hidden>
+      <div class="sms-layout">
+        <div class="phone">
+          <div class="phone-top"><b>Nerd Out Check-ins</b><span>(701) 555-0142</span></div>
+          <div class="thread" id="thread"></div>
+          <form class="sms-input" id="sms-form">
+            <textarea id="sms-text" placeholder="Text message" aria-label="Text message"></textarea>
+            <button class="btn small" type="submit">Send</button>
+          </form>
+        </div>
+        <div class="sms-side">
+          <div class="panel">
+            <h3>How this works</h3>
+            <p class="muted" id="sms-who"></p>
+            <p class="muted">Reply to the reminder in plain words. The app sorts each sentence into Done, Tomorrow, or Blocked, saves it to the feed, and texts back a confirmation. A second text the same day gets added to that check-in as a reply. When the owner replies in the feed, the reply shows up here as a text.</p>
+            <p class="muted">This demo uses a simple keyword sorter. The live version would use AI, which handles messier wording.</p>
+          </div>
+          <div class="panel" id="sms-result" hidden></div>
+        </div>
+      </div>
+    </div>
+
+    <form class="form" id="checkin-form">
+      <h2>End-of-day check-in</h2>
+      <div class="posting-as" id="posting-as"></div>
+      <label for="f-done">What did you get done today?
+        <textarea id="f-done" placeholder="Shipped the signup form, reviewed Maya's PR..."></textarea>
+      </label>
+      <label for="f-plan">What's your plan for tomorrow?
+        <textarea id="f-plan" placeholder="Hook the form up to the email list..."></textarea>
+      </label>
+      <label for="f-blocked">Blocked on anything? <span class="hint">Leave empty if not.</span>
+        <textarea id="f-blocked" placeholder="Waiting on access to..."></textarea>
+      </label>
+      <div class="error" id="form-error" hidden></div>
+      <button class="btn" type="submit" id="f-submit">Post check-in</button>
+    </form>
+   </div>
+  </section>
+
+  <!-- FEED TAB -->
+  <section id="tab-feed">
+    <div style="display:grid;gap:14px">
+      <div class="toast" id="toast" hidden></div>
+      <div class="filters" id="filters"></div>
+      <div id="feed" style="display:grid;gap:12px"></div>
+    </div>
+  </section>
+
+  <!-- REPORT TAB -->
+  <section id="tab-report" hidden>
+    <div style="display:grid;gap:14px">
+      <div class="report-head">
+        <h2 id="report-title">Today</h2>
+        <div class="toggle" id="report-toggle">
+          <button data-view="today" aria-pressed="true">Today</button>
+          <button data-view="week" aria-pressed="false">This week</button>
+        </div>
+      </div>
+      <div id="report" style="display:grid;gap:14px"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+/* =====================================================================
+   DATA LAYOUT (artifact database)
+   checkins/<id>        one check-in: person, date, time, done, plan, blocked,
+                        resolved, replies[], via, raw, sample, createdBy, createdAt
+   config/team          { owner, members: [{name, role}] }  roster for the picker
+   sms/<slug>_<date>    { person, date, messages: [{dir, time, text}] }
+   data/users/<id>/prefs  this viewer's own selections (private, synced
+                        across their devices): me, tab, feedFilter, reportView, checkinMode
+   ===================================================================== */
+
+// Used only until config/team loads (or if it's never set).
+const DEFAULT_OWNER = "Nick";
+const DEFAULT_TEAM = [
+  { name: "Maya Chen", role: "Developer" }, { name: "Luis Ortega", role: "Developer" },
+  { name: "Sam Patel", role: "Developer" }, { name: "Priya Raman", role: "Researcher" },
+  { name: "Ben Holt", role: "Researcher" }, { name: "Jess Kowalski", role: "Account admin" },
+  { name: "Tom Reyes", role: "Account admin" },
+];
+
+const REMINDER_TIME = "16:30";
+const REMINDER_TEXT = "Nerd Out check-in: What did you get done today, what's the plan for tomorrow, and is anything blocking you? Just reply here.";
+
+const BLOCKED_WORDS = ["blocked", "blocker", "stuck", "waiting on", "waiting for", "still waiting",
+  "need help", "need access", "need your", "need nick", "can't", "cant", "cannot", "held up", "hung up"];
+const PLAN_WORDS = ["tomorrow", "tmrw", "tmr", "next up", "plan", "planning", "going to", "gonna",
+  "will", "i'll"];
+
+/* ---------- State ---------- */
+let OWNER = DEFAULT_OWNER;
+let TEAM = DEFAULT_TEAM;
+let checkins = [];
+let loaded = false;          // first checkins snapshot arrived
+let mode = "connecting";     // connecting | live | local
+let readOnly = false;
+let canClear = false;
+let db = null, uid = null;
+let me = OWNER, tab = "feed", feedFilter = "all", reportView = "today", checkinMode = "form";
+let smsDoc = null, smsUnsub = null, smsKey = "";
+let lastChange = null, pendingWrites = 0;
+let confirmClear = false;
+
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const nl = (s) => esc(s).replace(/\n/g, "<br>");
+const TODAY = () => new Date().toLocaleDateString("en-CA");
+const slug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "x";
+
+function roleOf(name) {
+  if (name === OWNER) return "Owner";
+  const p = TEAM.find((t) => t.name === name);
+  return p ? p.role : "";
+}
+function initials(name) { return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(); }
+function toDate(d) { return new Date(d + "T12:00:00"); }
+function daysBetween(a, b) { return Math.round((toDate(b) - toDate(a)) / 86400000); }
+function addDays(d, n) { const x = toDate(d); x.setDate(x.getDate() + n); return x.toLocaleDateString("en-CA"); }
+function fmtTime(t) {
+  if (!t) return "";
+  let [h, m] = t.split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2, "0")} ${ap}`;
+}
+function fmtDay(d) { return toDate(d).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); }
+function dayLabel(d) {
+  const diff = daysBetween(d, TODAY());
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Yesterday";
+  return toDate(d).toLocaleDateString("en-US", { weekday: "long" });
+}
+function nowTime() {
+  const n = new Date();
+  return `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}`;
+}
+function weekDays() {
+  const t = TODAY(); const dow = toDate(t).getDay();
+  const monday = addDays(t, dow === 0 ? -6 : 1 - dow);
+  return [0, 1, 2, 3, 4].map((i) => addDays(monday, i));
+}
+
+/* ---------- Sync status ---------- */
+function setSync() { /* no visible sync indicator, matching the original design */ }
+function toast(text, bad) {
+  const t = $("#toast"); t.textContent = text; t.classList.toggle("bad", !!bad); t.hidden = false;
+}
+
+/* ---------- Writes (all go through here) ---------- */
+async function write(fn) {
+  if (mode !== "live") return true;
+  pendingWrites++; setSync();
+  try { await fn(); return true; }
+  catch (e) {
+    if (e && e.code === "invalid_argument") { readOnly = true; toast("You have view-only access, so this wasn't saved.", true); }
+    else if (e && e.code === "quota_exceeded") toast("The database is full. Clear sample data or old check-ins to make room.", true);
+    else toast("Couldn't save that. Check your connection and try again.", true);
+    return false;
+  } finally { pendingWrites--; setSync(); }
+}
+
+function addCheckin(obj) {
+  const full = { resolved: false, replies: [], via: "web", createdBy: uid, createdAt: new Date().toISOString(), ...obj };
+  if (mode !== "live") { checkins.push({ id: "local-" + Date.now(), ...full }); renderTab(); return Promise.resolve(true); }
+  return write(() => db.collection("checkins").doc().set(full));
+}
+function patchCheckin(id, patch) {
+  const c = checkins.find((x) => x.id === id);
+  if (mode !== "live") { Object.assign(c, patch); renderTab(); return Promise.resolve(true); }
+  return write(() => db.doc("checkins/" + id).update({ ...patch, updatedAt: new Date().toISOString() }));
+}
+
+/* Per-viewer selections, synced to this person's devices */
+let prefsTimer = null;
+function savePrefs() {
+  if (mode !== "live" || !uid) return;
+  clearTimeout(prefsTimer);
+  prefsTimer = setTimeout(() => {
+    write(() => db.doc(`data/users/${uid}/prefs`).set({ me, tab, feedFilter, reportView, checkinMode, updatedAt: new Date().toISOString() }));
+  }, 500);
+}
+
+/* ---------- "You are" picker ---------- */
+function renderMe() {
+  const names = [OWNER, ...TEAM.map((t) => t.name)];
+  if (!names.includes(me)) me = OWNER;
+  $("#me").innerHTML = names.map((n) => `<option ${n === me ? "selected" : ""}>${esc(n)}</option>`).join("");
+  $("#posting-as").innerHTML = `Posting as <b>${esc(me)}</b> (${esc(roleOf(me))}). Change this with "You are" at the top.`;
+}
+$("#me").addEventListener("change", (e) => {
+  me = e.target.value; renderMe(); $("#sms-result").hidden = true; watchSms(); renderTab(); savePrefs();
+});
+
+/* ---------- Tabs ---------- */
+function showTab(name) {
+  tab = name;
+  document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === name));
+  ["checkin", "feed", "report"].forEach((t) => ($("#tab-" + t).hidden = t !== name));
+  renderTab();
+}
+function renderTab() {
+  setSync();
+  $("#f-submit").disabled = readOnly;
+  if (tab === "feed") renderFeed();
+  if (tab === "report") renderReport();
+  if (tab === "checkin") { applyMode(); renderPhone(); }
+}
+document.querySelectorAll(".tabs button").forEach((b) =>
+  b.addEventListener("click", () => { $("#toast").hidden = true; showTab(b.dataset.tab); savePrefs(); }));
+
+/* ---------- Check-in form ---------- */
+$("#checkin-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const done = $("#f-done").value.trim(), plan = $("#f-plan").value.trim(), blocked = $("#f-blocked").value.trim();
+  const err = $("#form-error");
+  if (!done || !plan) { err.textContent = "Fill in what you got done and your plan for tomorrow."; err.hidden = false; return; }
+  err.hidden = true;
+  const ok = await addCheckin({ person: me, date: TODAY(), time: nowTime(), done, plan, blocked });
+  if (!ok) return;
+  e.target.reset();
+  feedFilter = "all"; showTab("feed"); savePrefs();
+  toast("Check-in posted. It's at the top of today's feed.");
+});
+
+/* ---------- Feed ---------- */
+const FILTERS = [
+  { id: "all", label: "All" }, { id: "open", label: "Open blockers" },
+  { id: "Developer", label: "Developers" }, { id: "Researcher", label: "Researchers" },
+  { id: "Account admin", label: "Account admins" },
+];
+
+function renderFeed() {
+  $("#filters").innerHTML = FILTERS.map((f) =>
+    `<button class="chip" data-filter="${f.id}" aria-pressed="${f.id === feedFilter}">${f.label}</button>`).join("");
+
+  if (!loaded && mode === "connecting") { $("#feed").innerHTML = `<div class="empty"><b>Loading check-ins</b>Pulling the latest from the shared database.</div>`; return; }
+  if (!checkins.length) {
+    $("#feed").innerHTML = `<div class="empty"><b>No check-ins yet</b>Post the first one from the Check in tab. It will show up here on every device.</div>`;
+    return;
+  }
+  let list = checkins.filter((c) => {
+    if (feedFilter === "all") return true;
+    if (feedFilter === "open") return c.blocked && !c.resolved;
+    return roleOf(c.person) === feedFilter;
+  });
+  list.sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+  if (!list.length) { $("#feed").innerHTML = `<div class="empty">Nothing here. Try another filter.</div>`; return; }
+
+  let html = "", lastDate = "";
+  for (const c of list) {
+    if (c.date !== lastDate) {
+      html += `<div class="day-head"><h3>${dayLabel(c.date)}</h3><span>${fmtDay(c.date)}</span></div>`;
+      lastDate = c.date;
+    }
+    html += cardHtml(c);
+  }
+  // keep any half-typed replies across live re-renders
+  const drafts = {};
+  document.querySelectorAll(".reply-form input").forEach((i) => { if (i.value) drafts[i.id] = i.value; });
+  const focused = document.activeElement && document.activeElement.id;
+  $("#feed").innerHTML = html;
+  for (const [id, v] of Object.entries(drafts)) { const el = document.getElementById(id); if (el) el.value = v; }
+  if (focused && focused.startsWith("reply-")) document.getElementById(focused)?.focus();
+}
+
+function cardHtml(c) {
+  const replies = c.replies || [];
+  const pill = c.blocked ? (c.resolved ? `<span class="pill resolved">Resolved</span>` : `<span class="pill blocked">Blocked</span>`) : "";
+  const blocker = c.blocked ? `
+    <div class="blocker ${c.resolved ? "is-resolved" : ""}">
+      <div class="sec"><div class="sec-label">Blocked on</div><p>${nl(c.blocked)}</p></div>
+      ${c.resolved || readOnly ? "" : `<button class="btn small ok" data-resolve="${esc(c.id)}">Mark resolved</button>`}
+    </div>` : "";
+  const repliesHtml = replies.map((r) => `
+    <div class="reply">
+      <div class="r-by ${r.by === OWNER ? "owner" : ""}">${esc(r.by)}<small>${r.date && r.date !== c.date ? fmtDay(r.date) + ", " : ""}${fmtTime(r.time)}</small></div>
+      <p>${nl(r.text)}</p>
+    </div>`).join("");
+  return `
+  <article class="card">
+    <div class="card-top">
+      <div class="avatar">${esc(initials(c.person))}</div>
+      <div><div class="name">${esc(c.person)}</div><div class="role">${esc(roleOf(c.person))}</div></div>
+      ${pill}
+      ${c.via === "text" ? `<span class="tag">via text</span>` : ""}
+      <div class="time">${fmtTime(c.time)}</div>
+    </div>
+    <div class="sec"><div class="sec-label">Done</div><p>${c.done ? nl(c.done) : `<span class="role">Nothing listed</span>`}</p></div>
+    <div class="sec"><div class="sec-label">Tomorrow</div><p>${c.plan ? nl(c.plan) : `<span class="role">Nothing listed</span>`}</p></div>
+    ${blocker}
+    ${c.raw ? `<details class="raw"><summary>Original text</summary><p>${nl(c.raw)}</p></details>` : ""}
+    <div class="replies">
+      ${repliesHtml}
+      ${readOnly ? "" : `<form class="reply-form" data-reply="${esc(c.id)}">
+        <input id="reply-${esc(c.id)}" placeholder="Reply as ${esc(me)}..." aria-label="Reply to ${esc(c.person)}">
+        <button class="btn small ghost" type="submit">Reply</button>
+      </form>`}
+    </div>
+  </article>`;
+}
+
+$("#filters").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-filter]");
+  if (b) { feedFilter = b.dataset.filter; renderFeed(); savePrefs(); }
+});
+$("#feed").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-resolve]");
+  if (!b) return;
+  const c = checkins.find((x) => x.id === b.dataset.resolve);
+  b.disabled = true;
+  patchCheckin(c.id, { resolved: true,
+    replies: [...(c.replies || []), { by: me, date: TODAY(), time: nowTime(), text: "Marked this blocker resolved." }] });
+});
+$("#feed").addEventListener("submit", async (e) => {
+  const f = e.target.closest("[data-reply]");
+  if (!f) return;
+  e.preventDefault();
+  const input = f.querySelector("input");
+  const text = input.value.trim();
+  if (!text) return;
+  const c = checkins.find((x) => x.id === f.dataset.reply);
+  input.value = "";
+  const reply = { by: me, date: TODAY(), time: nowTime(), text };
+  const ok = await patchCheckin(c.id, { replies: [...(c.replies || []), reply] });
+  if (!ok) { input.value = text; return; }
+  // A reply to a texted check-in also lands on that person's phone
+  if (c.via === "text" && me !== c.person) await appendSms(c.person, c.date, [{ dir: "out", time: reply.time, text: `${me}: ${text}` }], c);
+});
+
+/* ---------- Simulated texting ---------- */
+const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const wordRe = (words) => new RegExp("\\b(" + words.map(escRe).join("|") + ")\\b", "i");
+const BLOCKED_RE = wordRe(BLOCKED_WORDS);
+const PLAN_RE = wordRe(PLAN_WORDS);
+const NO_BLOCKER_RE = /^(no|not|nothing|zero|none)\b.*\b(block|blocked|blocker|blockers|blocking)\b/i;
+const NONE_RE = /^(none|no|nothing|n\/a|nope)\.?$/i;
+const LABELS = [
+  [/^(done|did|today|finished)\s*[:\-]\s*/i, "done"],
+  [/^(tomorrow|tmrw|plan|next)\s*[:\-]\s*/i, "plan"],
+  [/^(blocked on|blocked|blockers?|stuck)\s*[:\-]\s*/i, "blocked"],
+];
+function splitPieces(raw) {
+  const triggers = [...BLOCKED_WORDS, ...PLAN_WORDS, "no blockers", "nothing blocking", "not blocked"].map(escRe).join("|");
+  return raw.split(/\n+|(?<=[.!?;])\s+/)
+    .flatMap((p) => p.split(new RegExp(`,\\s*(?:and\\s+|but\\s+)?(?=(?:${triggers})\\b)`, "i")))
+    .flatMap((p) => p.split(/\s+(?:and|but)\s+(?=(?:tomorrow|tmrw|blocked|stuck|still waiting|waiting on)\b)/i))
+    .map((s) => s.trim().replace(/^[-•*]\s*/, "").replace(/[;,]$/, ""))
+    .filter(Boolean);
+}
+function tidy(s) { s = s.charAt(0).toUpperCase() + s.slice(1); return /[.!?]$/.test(s) ? s : s + "."; }
+function parseText(raw) {
+  const out = { done: [], plan: [], blocked: [] };
+  for (let p of splitPieces(raw)) {
+    let bucket = null;
+    for (const [re, b] of LABELS) { if (re.test(p)) { bucket = b; p = p.replace(re, ""); break; } }
+    if (!p || NO_BLOCKER_RE.test(p) || (bucket === "blocked" && NONE_RE.test(p))) continue;
+    if (!bucket) bucket = BLOCKED_RE.test(p) ? "blocked" : PLAN_RE.test(p) ? "plan" : "done";
+    out[bucket].push(tidy(p));
+  }
+  return { done: out.done.join(" "), plan: out.plan.join(" "), blocked: out.blocked.join(" ") };
+}
+function confirmText(c) {
+  let msg = `Got it, ${c.person.split(" ")[0]}. Logged to today's check-in.`;
+  if (!c.plan) msg += " Nothing listed for tomorrow yet. Text again to add it.";
+  if (c.blocked) {
+    const short = c.blocked.length > 70 ? c.blocked.slice(0, 67) + "..." : c.blocked;
+    msg += ` Blocker flagged for ${OWNER}: "${short}"`;
+  } else msg += " No blockers.";
+  return msg;
+}
+
+// Local fallback store for texts when not connected
+const localSms = {};
+function smsPath(person, date) { return `sms/${slug(person)}_${date}`; }
+// Messages already logged for a texted check-in that has no sms doc yet (e.g. seeded data)
+function derivedMessages(person, date) {
+  const msgs = [];
+  checkins.filter((c) => c.person === person && c.date === date && c.via === "text" && c.raw).forEach((c) => {
+    msgs.push({ dir: "in", time: c.time, text: c.raw }, { dir: "out", time: c.time, text: confirmText(c) });
+  });
+  return msgs;
+}
+function currentMessages() {
+  const date = TODAY();
+  if (mode !== "live") return localSms[smsPath(me, date)] || derivedMessages(me, date);
+  return smsDoc && smsDoc.exists ? (smsDoc.data().messages || []) : derivedMessages(me, date);
+}
+async function appendSms(person, date, add) {
+  const path = smsPath(person, date);
+  if (mode !== "live") {
+    localSms[path] = [...(localSms[path] || derivedMessages(person, date)), ...add];
+    renderPhone(); return true;
+  }
+  return write(async () => {
+    const ref = db.doc(path);
+    const snap = await ref.get();
+    const prior = snap.exists ? (snap.data().messages || []) : derivedMessages(person, date);
+    await ref.set({ person, date, messages: [...prior, ...add], updatedAt: new Date().toISOString() });
+  });
+}
+function watchSms() {
+  if (mode !== "live") return;
+  const key = smsPath(me, TODAY());
+  if (key === smsKey) return;
+  if (smsUnsub) smsUnsub();
+  smsKey = key; smsDoc = null;
+  smsUnsub = db.doc(key).onSnapshot((snap) => { smsDoc = snap; if (tab === "checkin") renderPhone(); }, () => {});
+}
+
+function renderPhone() {
+  const isOwner = me === OWNER;
+  $("#sms-text").disabled = isOwner || readOnly;
+  $("#sms-form button").disabled = isOwner || readOnly;
+  if (isOwner) {
+    $("#thread").innerHTML = `<p class="muted" style="text-align:center;margin:auto">Switch "You are" at the top to a team member to text in as them.</p>`;
+    $("#sms-who").textContent = `You're set as ${OWNER}. Pick a team member at the top to try texting in.`;
+    return;
+  }
+  $("#sms-who").innerHTML = `Texting as <b>${esc(me)}</b>. Switch "You are" at the top to try someone else.`;
+  const log = [{ dir: "out", time: REMINDER_TIME, text: REMINDER_TEXT }, ...currentMessages()];
+  $("#thread").innerHTML = log.map((m) =>
+    `<div class="bubble ${m.dir}">${esc(m.text)}</div><div class="bubble-time ${m.dir}">${fmtTime(m.time)}</div>`).join("");
+  $("#thread").scrollTop = $("#thread").scrollHeight;
+}
+function renderResult(c, added) {
+  const box = $("#sms-result"); box.hidden = false;
+  if (added) {
+    box.innerHTML = `<h3>Added as a reply</h3>
+      <p class="muted">${esc(c.person)} already texted in today, so this went onto that check-in as a reply.</p>
+      <button class="btn small ghost" data-goto-feed>See it in the feed</button>`;
+    return;
+  }
+  const sec = (label, val) => `<div class="sec"><div class="sec-label">${label}</div><p>${val ? nl(val) : `<span class="role">Nothing found</span>`}</p></div>`;
+  box.innerHTML = `<h3>How it was logged</h3>
+    ${sec("Done", c.done)}${sec("Tomorrow", c.plan)}
+    ${c.blocked ? `<div class="blocker">${sec("Blocked on", c.blocked)}</div>` : sec("Blocked on", "")}
+    <button class="btn small ghost" data-goto-feed>See it in the feed</button>`;
+}
+
+$("#sms-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (me === OWNER || readOnly) return;
+  const text = $("#sms-text").value.trim();
+  if (!text) return;
+  const t = nowTime(), date = TODAY();
+  $("#sms-text").value = "";
+  const existing = checkins.find((c) => c.person === me && c.date === date && c.via === "text");
+  if (existing) {
+    await patchCheckin(existing.id, { replies: [...(existing.replies || []), { by: me, date, time: t, text }] });
+    await appendSms(me, date, [{ dir: "in", time: t, text }, { dir: "out", time: t, text: "Added to today's check-in." }]);
+    renderResult(existing, true);
+  } else {
+    const parsed = parseText(text);
+    if (!parsed.done && !parsed.plan && !parsed.blocked) parsed.done = tidy(text);
+    const c = { person: me, date, time: t, via: "text", raw: text, ...parsed };
+    // log the conversation first so the confirmation isn't re-derived from the new check-in
+    await appendSms(me, date, [{ dir: "in", time: t, text }, { dir: "out", time: t, text: confirmText(c) }]);
+    await addCheckin(c);
+    renderResult(c, false);
+  }
+  renderPhone();
+});
+$("#sms-text").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#sms-form").requestSubmit(); }
+});
+$("#sms-result").addEventListener("click", (e) => {
+  if (e.target.closest("[data-goto-feed]")) { feedFilter = "all"; showTab("feed"); savePrefs(); }
+});
+
+function applyMode() {
+  document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.mode === checkinMode));
+  $("#mode-text").hidden = checkinMode !== "text";
+  $("#checkin-form").hidden = checkinMode !== "form";
+}
+document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
+  checkinMode = b.dataset.mode; applyMode(); renderPhone(); savePrefs();
+}));
+
+/* ---------- Report ---------- */
+document.querySelectorAll("#report-toggle button").forEach((b) =>
+  b.addEventListener("click", () => { reportView = b.dataset.view; renderReport(); savePrefs(); }));
+
+function renderReport() {
+  document.querySelectorAll("#report-toggle button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === reportView));
+  $("#report-title").textContent = reportView === "today" ? `Today, ${fmtDay(TODAY())}` : `Week of ${fmtDay(weekDays()[0])}`;
+  $("#report").innerHTML = reportView === "today" ? todayHtml() : weekHtml();
+}
+
+function openBlockers() {
+  return checkins.filter((c) => c.blocked && !c.resolved).sort((a, b) => a.date.localeCompare(b.date));
+}
+function todayHtml() {
+  const t = TODAY();
+  const todays = checkins.filter((c) => c.date === t);
+  const inNames = new Set(todays.map((c) => c.person));
+  const missing = TEAM.filter((m) => !inNames.has(m.name));
+  const open = openBlockers();
+  const blockersHtml = open.length ? open.map((c) => {
+    const age = daysBetween(c.date, t);
+    return `<div class="row"><div class="who-col">${esc(c.person)}<small>${esc(roleOf(c.person))}</small></div>
+      <div><p>${nl(c.blocked)}</p><span class="age">${age === 0 ? "raised today" : `open ${age} day${age > 1 ? "s" : ""}`}</span></div></div>`;
+  }).join("") : `<p class="role">No open blockers.</p>`;
+  const plansHtml = todays.length ? todays.map((c) =>
+    `<div class="row"><div class="who-col">${esc(c.person)}<small>${esc(roleOf(c.person))}</small></div><p>${c.plan ? nl(c.plan) : `<span class="role">Nothing listed</span>`}</p></div>`
+  ).join("") : `<p class="role">No check-ins yet today.</p>`;
+  return `
+  <div class="stats">
+    <div class="stat"><div class="num">${TEAM.filter((m) => inNames.has(m.name)).length}/${TEAM.length}</div><div class="lbl">checked in</div></div>
+    <div class="stat"><div class="num ${open.length ? "bad" : ""}">${open.length}</div><div class="lbl">open blockers</div></div>
+    <div class="stat"><div class="num ${missing.length ? "bad" : ""}">${missing.length}</div><div class="lbl">missing</div></div>
+  </div>
+  <div class="panel"><h3>Who checked in</h3>
+    <div class="people">${TEAM.map((m) => `<span class="person ${inNames.has(m.name) ? "" : "missing"}">${esc(m.name)}${inNames.has(m.name) ? "" : " (missing)"}</span>`).join("")}</div>
+  </div>
+  <div class="panel"><h3>Open blockers</h3>${blockersHtml}</div>
+  <div class="panel"><h3>Plans for tomorrow</h3>${plansHtml}</div>`;
+}
+function weekHtml() {
+  const t = TODAY(), days = weekDays();
+  const elapsed = days.filter((d) => d <= t);
+  const weekCheckins = checkins.filter((c) => days.includes(c.date));
+  const raised = weekCheckins.filter((c) => c.blocked);
+  const resolved = raised.filter((c) => c.resolved);
+  const rows = TEAM.map((m) => {
+    const daysIn = new Set(weekCheckins.filter((c) => c.person === m.name).map((c) => c.date));
+    const count = elapsed.filter((d) => daysIn.has(d)).length;
+    const cells = days.map((d) => {
+      const cls = d > t ? "future" : daysIn.has(d) ? "yes" : "no";
+      const lbl = d > t ? "not yet" : daysIn.has(d) ? "checked in" : "missed";
+      return `<td class="c"><span class="dot ${cls}" title="${fmtDay(d)}: ${lbl}" aria-label="${fmtDay(d)}: ${lbl}"></span></td>`;
+    }).join("");
+    return `<tr><td><b>${esc(m.name)}</b><br><span class="role">${esc(m.role)}</span></td>${cells}
+      <td class="rate ${count < elapsed.length ? "low" : ""}">${count}/${elapsed.length}</td></tr>`;
+  }).join("");
+  const doneLists = TEAM.map((m) => {
+    const mine = weekCheckins.filter((c) => c.person === m.name).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const items = mine.length
+      ? mine.map((c) => `<li><span>${toDate(c.date).toLocaleDateString("en-US", { weekday: "short" })}</span>${esc(c.done)}</li>`).join("")
+      : `<li>No check-ins this week.</li>`;
+    return `<details><summary>${esc(m.name)} <small>${mine.length} update${mine.length === 1 ? "" : "s"}</small></summary><ul>${items}</ul></details>`;
+  }).join("");
+  const totalPossible = TEAM.length * elapsed.length;
+  const totalIn = TEAM.reduce((n, m) => n + elapsed.filter((d) => weekCheckins.some((c) => c.person === m.name && c.date === d)).length, 0);
+  return `
+  <div class="stats">
+    <div class="stat"><div class="num">${totalPossible ? Math.round((totalIn / totalPossible) * 100) : 0}%</div><div class="lbl">check-in rate</div></div>
+    <div class="stat"><div class="num">${raised.length}</div><div class="lbl">blockers raised</div></div>
+    <div class="stat"><div class="num ${resolved.length < raised.length ? "bad" : ""}">${resolved.length}</div><div class="lbl">resolved</div></div>
+  </div>
+  <div class="panel"><h3>Check-ins by day</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Person</th>${days.map((d) => `<th class="c">${toDate(d).toLocaleDateString("en-US", { weekday: "short" })}</th>`).join("")}<th>Rate</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>
+  <div class="panel"><h3>What got done</h3>${doneLists}</div>`;
+}
+
+/* ---------- Start ---------- */
+renderMe();
+showTab("feed");
+
+(async () => {
+  const [dbNs, user] = await Promise.all([
+    window.claude?.use ? window.claude.use("db") : null,
+    window.claude?.use ? window.claude.use("user") : null,
+  ]);
+  if (!dbNs) { mode = "local"; loaded = true; renderTab(); return; }
+  db = dbNs;
+  uid = user ? await user.id() : null;
+  const [canWrite, isOwner, canEdit] = user
+    ? await Promise.all([user.can("data.write"), user.isOwner(), user.canEdit()])
+    : [null, false, false];
+  if (canWrite === false) readOnly = true;
+  canClear = isOwner || canEdit;
+  mode = "live";
+
+  // Restore this person's selections from their other devices
+  if (uid) {
+    try {
+      const p = await db.doc(`data/users/${uid}/prefs`).get();
+      if (p.exists) {
+        const d = p.data();
+        if (d.me) me = d.me;
+        if (["checkin", "feed", "report"].includes(d.tab)) tab = d.tab;
+        if (FILTERS.some((f) => f.id === d.feedFilter)) feedFilter = d.feedFilter;
+        if (d.reportView === "week" || d.reportView === "today") reportView = d.reportView;
+        if (d.checkinMode === "text" || d.checkinMode === "form") checkinMode = d.checkinMode;
+      }
+    } catch (e) { /* keep defaults */ }
+  }
+
+  db.doc("config/team").onSnapshot((snap) => {
+    if (snap.exists) {
+      const d = snap.data();
+      if (d.owner) OWNER = d.owner;
+      if (Array.isArray(d.members) && d.members.length) TEAM = d.members;
+    }
+    renderMe(); renderTab();
+  }, () => {});
+
+  db.collection("checkins").orderBy("date", "desc").limit(1000).onSnapshot((snap) => {
+    checkins = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    loaded = true; lastChange = new Date();
+    renderTab();
+  }, (err) => {
+    mode = err && err.code === "revoked" ? "local" : mode;
+    setSync();
+  });
+
+  renderMe();
+  watchSms();
+  showTab(tab);
+})();
+</script>
+
+</body></html>
