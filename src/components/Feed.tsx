@@ -9,8 +9,10 @@ export const FILTERS = [
   { id: "Account admin", label: "Account admins" },
 ];
 
-export const roleOf = (team: Team, name: string) =>
-  name === team.owner ? "Owner" : team.members.find((m) => m.name === name)?.role ?? "";
+export const roleOf = (team: Team, userId: string | null, name: string) => {
+  const all = team.owner ? [team.owner, ...team.members] : team.members;
+  return (all.find((m) => m.id === userId) ?? all.find((m) => m.name === name))?.role ?? "";
+};
 
 export function Multiline({ text }: { text: string }) {
   return <>{text.split("\n").map((l, i) => (i ? [<br key={"b" + i} />, l] : l))}</>;
@@ -25,7 +27,7 @@ function Card({ c, team, me, onResolve, onReply }: {
     <article className="card">
       <div className="card-top">
         <div className="avatar">{initials(c.person)}</div>
-        <div><div className="name">{c.person}</div><div className="role">{roleOf(team, c.person)}</div></div>
+        <div><div className="name">{c.person}</div><div className="role">{roleOf(team, c.user_id, c.person)}</div></div>
         {c.blocked && <span className={`pill ${c.resolved ? "resolved" : "blocked"}`}>{c.resolved ? "Resolved" : "Blocked"}</span>}
         {c.via === "text" && <span className="tag">via text</span>}
         <div className="time">{fmtTime(c.time)}</div>
@@ -44,7 +46,7 @@ function Card({ c, team, me, onResolve, onReply }: {
       <div className="replies">
         {c.replies.map((r, i) => (
           <div className="reply" key={i}>
-            <div className={`r-by ${r.by === team.owner ? "owner" : ""}`}>{r.by}
+            <div className={`r-by ${r.by === team.owner?.name ? "owner" : ""}`}>{r.by}
               <small>{r.date && r.date !== c.date ? fmtDay(r.date) + ", " : ""}{fmtTime(r.time)}</small></div>
             <p><Multiline text={r.text} /></p>
           </div>
@@ -71,7 +73,7 @@ export default function Feed({ checkins, team, me, filter, setFilter, toast, loa
   onResolve: (c: Checkin) => void; onReply: (c: Checkin, text: string) => Promise<boolean>;
 }) {
   const list = checkins
-    .filter((c) => filter === "all" ? true : filter === "open" ? c.blocked && !c.resolved : roleOf(team, c.person) === filter)
+    .filter((c) => filter === "all" ? true : filter === "open" ? c.blocked && !c.resolved : roleOf(team, c.user_id, c.person) === filter)
     .sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
   let lastDate = "";
   return (

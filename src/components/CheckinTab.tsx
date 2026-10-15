@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import type { Checkin, SmsMessage, Team } from "@/lib/types";
+import type { Checkin, Profile, SmsMessage } from "@/lib/types";
 import { fmtTime } from "@/lib/dates";
 import { REMINDER_TEXT, REMINDER_TIME } from "@/lib/sms";
-import { Multiline, roleOf } from "./Feed";
+import { Multiline } from "./Feed";
 
 export type SmsResult = { c: Pick<Checkin, "person" | "done" | "plan" | "blocked">; added: boolean } | null;
 
@@ -12,8 +12,8 @@ function Sec({ label, val }: { label: string; val: string }) {
     <p>{val ? <Multiline text={val} /> : <span className="role">Nothing found</span>}</p></div>;
 }
 
-export default function CheckinTab({ team, me, mode, setMode, readOnly, messages, result, onSubmitForm, onSendSms, onGotoFeed }: {
-  team: Team; me: string; mode: "form" | "text"; setMode: (m: "form" | "text") => void; readOnly: boolean;
+export default function CheckinTab({ me, mode, setMode, readOnly, messages, result, onSubmitForm, onSendSms, onGotoFeed }: {
+  me: Profile; mode: "form" | "text"; setMode: (m: "form" | "text") => void; readOnly: boolean;
   messages: SmsMessage[]; result: SmsResult;
   onSubmitForm: (v: { done: string; plan: string; blocked: string }) => Promise<boolean>;
   onSendSms: (text: string) => Promise<void>; onGotoFeed: () => void;
@@ -21,13 +21,12 @@ export default function CheckinTab({ team, me, mode, setMode, readOnly, messages
   const [done, setDone] = useState(""), [plan, setPlan] = useState(""), [blocked, setBlocked] = useState("");
   const [error, setError] = useState(""), [sms, setSms] = useState("");
   const thread = useRef<HTMLDivElement>(null);
-  const isOwner = me === team.owner;
   const log: SmsMessage[] = [{ dir: "out", time: REMINDER_TIME, text: REMINDER_TEXT }, ...messages];
   useEffect(() => { if (thread.current) thread.current.scrollTop = thread.current.scrollHeight; }, [messages, mode]);
 
   const sendSms = async () => {
     const text = sms.trim();
-    if (!text || isOwner || readOnly) return;
+    if (!text || readOnly) return;
     setSms("");
     await onSendSms(text);
   };
@@ -45,28 +44,24 @@ export default function CheckinTab({ team, me, mode, setMode, readOnly, messages
             <div className="phone">
               <div className="phone-top"><b>Nerd Out Check-ins</b><span>(701) 555-0142</span></div>
               <div className="thread" ref={thread}>
-                {isOwner
-                  ? <p className="muted" style={{ textAlign: "center", margin: "auto" }}>Switch &quot;You are&quot; at the top to a team member to text in as them.</p>
-                  : log.map((m, i) => (
-                    <div key={i} style={{ display: "contents" }}>
-                      <div className={`bubble ${m.dir}`}>{m.text}</div>
-                      <div className={`bubble-time ${m.dir}`}>{fmtTime(m.time)}</div>
-                    </div>
-                  ))}
+                {log.map((m, i) => (
+                  <div key={i} style={{ display: "contents" }}>
+                    <div className={`bubble ${m.dir}`}>{m.text}</div>
+                    <div className={`bubble-time ${m.dir}`}>{fmtTime(m.time)}</div>
+                  </div>
+                ))}
               </div>
               <form className="sms-input" onSubmit={(e) => { e.preventDefault(); void sendSms(); }}>
                 <textarea value={sms} onChange={(e) => setSms(e.target.value)} placeholder="Text message" aria-label="Text message"
-                  disabled={isOwner || readOnly}
+                  disabled={readOnly}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void sendSms(); } }} />
-                <button className="btn small" type="submit" disabled={isOwner || readOnly}>Send</button>
+                <button className="btn small" type="submit" disabled={readOnly}>Send</button>
               </form>
             </div>
             <div className="sms-side">
               <div className="panel">
                 <h3>How this works</h3>
-                <p className="muted">{isOwner
-                  ? `You're set as ${team.owner}. Pick a team member at the top to try texting in.`
-                  : <>Texting as <b>{me}</b>. Switch &quot;You are&quot; at the top to try someone else.</>}</p>
+                <p className="muted">Texting as <b>{me.name}</b>.</p>
                 <p className="muted">Reply to the reminder in plain words. The app sorts each sentence into Done, Tomorrow, or Blocked, saves it to the feed, and texts back a confirmation. A second text the same day gets added to that check-in as a reply. When the owner replies in the feed, the reply shows up here as a text.</p>
                 <p className="muted">This uses a simple keyword sorter. A live version could use AI, which handles messier wording.</p>
               </div>
@@ -97,7 +92,7 @@ export default function CheckinTab({ team, me, mode, setMode, readOnly, messages
             }
           }}>
             <h2>End-of-day check-in</h2>
-            <div className="posting-as">Posting as <b>{me}</b> ({roleOf(team, me)}). Change this with &quot;You are&quot; at the top.</div>
+            <div className="posting-as">Posting as <b>{me.name}</b> ({me.role}).</div>
             <label>What did you get done today?
               <textarea value={done} onChange={(e) => setDone(e.target.value)} placeholder="Shipped the signup form, reviewed Maya's PR..." /></label>
             <label>What&apos;s your plan for tomorrow?
