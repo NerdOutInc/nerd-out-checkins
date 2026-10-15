@@ -17,13 +17,13 @@ With no env vars set, the app runs in **demo mode** (data lives in memory and re
 
 1. Create a Supabase project.
 2. Run `supabase/migrations/0001_init.sql` in the SQL editor (or via the Supabase CLI).
-3. Copy `.env.example` to `.env.local` and fill in the project URL and anon/publishable key.
+3. Copy `.env.example` to `.env.local` and fill in the project URL and publishable key (a legacy anon key also works via `NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 
 > The initial migration has **temporary open RLS policies** for the anon key because the app has no sign-in yet. Add Supabase Auth and tighten the policies before putting real data in.
 
 ## Deploy to Vercel
 
-Import this repo in Vercel and add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` as environment variables.
+Import this repo in Vercel and add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as environment variables.
 
 ## Layout
 
